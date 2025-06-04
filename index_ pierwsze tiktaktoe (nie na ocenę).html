@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kółko i Krzyżyk</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            justify-content: center;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            font-size: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #333;
+        }
+
+            .cell:hover {
+                background-color: #e0e0e0;
+            }
+
+        .message {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Kółko i Krzyżyk</h1>
+    <div class="board" id="board"></div>
+    <div class="message" id="message"></div>
+    <button onclick="resetGame()">Nowa gra</button>
+
+    <script>
+    const board = document.getElementById('board');
+    const message = document.getElementById('message');
+    let currentPlayer = 'X';
+    let gameActive = true;
+    const cells = [];
+
+    function createBoard() {
+      board.innerHTML = '';
+      cells.length = 0;
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.addEventListener('click', () => cellClick(i));
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    function cellClick(index) {
+      if (!gameActive || cells[index].textContent !== '') return;
+      cells[index].textContent = currentPlayer;
+      if (checkWinner()) {
+        message.textContent = `Gracz ${currentPlayer} wygrywa! 🎉`;
+        gameActive = false;
+      } else if (cells.every(cell => cell.textContent !== '')) {
+        message.textContent = 'Remis!';
+        gameActive = false;
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        message.textContent = `Tura gracza: ${currentPlayer}`;
+      }
+    }
+
+    function checkWinner() {
+      const winConditions = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      return winConditions.some(combination => {
+        return combination.every(index => cells[index].textContent === currentPlayer);
+      });
+    }
+
+    function resetGame() {
+      currentPlayer = 'X';
+      gameActive = true;
+      message.textContent = 'Tura gracza: X';
+      createBoard();
+    }
+
+    resetGame();
+    </script>
+
+</body>
+</html>
