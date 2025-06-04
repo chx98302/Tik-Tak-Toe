@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Kółko i Krzyżyk Deluxe</title>
+    <style>
+        body {
+            background-color: #1e1e2f;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 10px;
+        }
+
+        .settings {
+            margin: 10px;
+        }
+
+            .settings select, .settings button {
+                padding: 5px;
+                margin: 5px;
+                font-size: 16px;
+            }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 5px;
+            margin: 20px 0;
+        }
+
+        .cell {
+            background-color: #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+            .cell:hover {
+                background-color: #444;
+                transform: scale(1.05);
+            }
+
+        .win {
+            background-color: #3cb371 !important;
+            animation: flash 0.5s alternate infinite;
+        }
+
+        @keyframes flash {
+            from {
+                background-color: #3cb371;
+            }
+
+            to {
+                background-color: #2e8b57;
+            }
+        }
+
+        .score {
+            font-size: 20px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Kółko i Krzyżyk Deluxe</h1>
+
+    <div class="settings">
+        Symbol gracza 1:
+        <select id="player1">
+            <option value="❌">❌</option>
+            <option value="🍎">🍎</option>
+            <option value="🐱">🐱</option>
+        </select>
+        Symbol gracza 2:
+        <select id="player2">
+            <option value="⭕">⭕</option>
+            <option value="🍍">🍍</option>
+            <option value="🐶">🐶</option>
+        </select>
+        Tło:
+        <select id="background">
+            <option value="#1e1e2f">Granatowe</option>
+            <option value="#87ceeb">Niebieskie</option>
+            <option value="#f5deb3">Beżowe</option>
+        </select>
+        <button onclick="startGame()">Nowa gra</button>
+    </div>
+
+    <div class="score" id="score">Gracz 1: 0 | Gracz 2: 0</div>
+
+    <div class="board" id="board"></div>
+
+    <div id="message"></div>
+
+    <script>
+    const boardElement = document.getElementById('board');
+    const scoreElement = document.getElementById('score');
+    const message = document.getElementById('message');
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 1;
+    let symbols = ['❌', '⭕'];
+    let score = [0, 0];
+    const winCombos = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    function startGame() {
+      const p1 = document.getElementById('player1').value;
+      const p2 = document.getElementById('player2').value;
+      const bg = document.getElementById('background').value;
+      symbols = [p1, p2];
+      document.body.style.backgroundColor = bg;
+
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 0;
+      boardElement.innerHTML = '';
+      message.innerHTML = '';
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.index = i;
+        cell.addEventListener('click', makeMove);
+        boardElement.appendChild(cell);
+      }
+    }
+
+    function makeMove(e) {
+      const index = e.target.dataset.index;
+      if (board[index] !== '') return;
+
+      board[index] = symbols[currentPlayer];
+      e.target.innerHTML = symbols[currentPlayer];
+
+      if (checkWin()) {
+        message.innerHTML = `<h2>Gracz ${currentPlayer + 1} (${symbols[currentPlayer]}) wygrał!</h2>`;
+        score[currentPlayer]++;
+        updateScore();
+        highlightWin();
+        disableBoard();
+      } else if (!board.includes('')) {
+        message.innerHTML = "<h2>Remis!</h2>";
+      } else {
+        currentPlayer = 1 - currentPlayer;
+      }
+    }
+
+    function checkWin() {
+      return winCombos.some(combo =>
+        combo.every(i => board[i] === symbols[currentPlayer])
+      );
+    }
+
+    function highlightWin() {
+      winCombos.forEach(combo => {
+        if (combo.every(i => board[i] === symbols[currentPlayer])) {
+          combo.forEach(i => {
+            document.querySelector(`.cell[data-index='${i}']`).classList.add('win');
+          });
+        }
+      });
+    }
+
+    function disableBoard() {
+      document.querySelectorAll('.cell').forEach(cell => cell.removeEventListener('click', makeMove));
+    }
+
+    function updateScore() {
+      scoreElement.innerHTML = `Gracz 1: ${score[0]} | Gracz 2: ${score[1]}`;
+    }
+
+    startGame();
+    </script>
+</body>
+</html>
